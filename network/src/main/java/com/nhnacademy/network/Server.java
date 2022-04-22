@@ -5,18 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-<<<<<<< HEAD
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-=======
-
-import java.io.PrintStream;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-
->>>>>>> 54255bb61617f3dc2a0f4b242911cc337f3330ff
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,10 +22,7 @@ public class Server {
     public int size(String str) {
         return str.length();
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 54255bb61617f3dc2a0f4b242911cc337f3330ff
     //    public String json(List <String> jsonData){
 //        String temp ="";
 //        for (String data:jsonData) {
@@ -43,21 +31,11 @@ public class Server {
 //        return "";
 //    }
     public String bodyMake(String path) {
-<<<<<<< HEAD
         String temp = "";
         switch (path) {
             case "/ip":
                 String ip = "1.253.143.122";
                 temp = "{\"origin\": \"" + ip + "\"\n }";
-=======
-        String temp ="";
-        switch(path){
-            case "/get":
-                String ip ="1.253.143.122";
-                temp ="{\n" +
-                    "  \"origin\": \"103.243.200.16\"\n" +
-                    "}";
->>>>>>> 54255bb61617f3dc2a0f4b242911cc337f3330ff
                 return temp;
         }
         return temp;
@@ -144,7 +122,9 @@ public class Server {
         Server server = new Server();
 
         try (ServerSocket serverSocket = new ServerSocket(80)) {
+            System.out.println("bye");
             Socket socket = serverSocket.accept();
+            System.out.println("hi");
             InputStream in = socket.getInputStream();
             byte[] bytes = null;
             String message = null;
@@ -152,12 +132,12 @@ public class Server {
             int readByteCount = in.read(bytes);
             message = new String(bytes, 0, readByteCount, "UTF-8");
             // 2-1
-            String messageResult = getMake(message);
-            //System.out.println(messageResult);
+//            String messageResult = getMake(message);
+//            System.out.println(messageResult);
             // 2-2
-            //System.out.println(getMakeMessage(message));
+//            System.out.println(getMakeMessage(message));
             // 2-3
-            //System.out.println(getMakeMessages(message));
+            System.out.println(getMakeMessages(message));
 
 
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -168,37 +148,25 @@ public class Server {
             List<String> result = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 result.add(line);
-<<<<<<< HEAD
-                System.out.println(line);
                 if (line.equals("")) {
                     break;
                 }
-=======
-                if (line.equals("")) break;
->>>>>>> 54255bb61617f3dc2a0f4b242911cc337f3330ff
+
+
             }
             ////////////////////
-
-
 
             String[] splitLine = result.get(0).split(" ");
 
             String body =
-<<<<<<< HEAD
                 splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
                     "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.getMake(splitLine[1])) + "\n" +
-=======
-                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
                     "Content-Length: " + server.size(server.bodyMake(splitLine[1])) + "\n" +
->>>>>>> 54255bb61617f3dc2a0f4b242911cc337f3330ff
                     "Connection: keep-alive\n" +
                     "Server: gunicorn/19.9.0\n" +
                     "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.getMake(splitLine[1]) +
+                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(splitLine[1]) +
                     "\n";
-
-            System.out.println(body);
 
             System.out.println(body);
 
