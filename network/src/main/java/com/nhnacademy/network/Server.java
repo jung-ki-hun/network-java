@@ -1,5 +1,9 @@
 package com.nhnacademy.network;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
+    private final static ObjectMapper mapper = new ObjectMapper();
+
     public String date() {
         ZonedDateTime now = ZonedDateTime.now();
         return DateTimeFormatter.RFC_1123_DATE_TIME.format(now);
@@ -34,40 +40,41 @@ public class Server {
 //        }
 //        return "";
 //    }
-    public String bodyMake(List<String> result) {
-        String temp = "";
-
+    public String bodyMake(List<String> result) throws JsonProcessingException {
         String path = result.get(0).split(" ")[1];
         String host = result.get(1).split(" ")[1];
-
+        ObjectNode node = mapper.createObjectNode();
 
         switch (path) {
             case "/ip":
-                temp = "{\n" +
-                    "  \"origin\": \"103.243.200.16\"\n" +
-                    "}";
-                return temp;
+                node.put("origin", "103.243.200.16");
+                break;
             case "/get":
-                temp = "{\n" +
-                    "  \"args\": {},\n" +
-                    "  \"headers\": {\n" +
-                    getHeaders(result) +
-                    "  },\n" +
-                    "  \"origin\": \"103.243.200.16\"\n" +
-                    "  \"url\": \"" + host + path + "\"\n" +
-                    "}";
+                node.put("args", "");
+                node.putPOJO("headers", getHeaders(result));
+                node.put("origin", "103.243.200.16");
+                node.put("url", host+path);
+//                temp = "{\n" +
+//                    "  \"args\": {},\n" +
+//                    "  \"headers\": {\n" +
+//                    getHeaders(result) +
+//                    "  },\n" +
+//                    "  \"origin\": \"103.243.200.16\"\n" +
+//                    "  \"url\": \"" + host + path + "\"\n" +
+//                    "}";
+                break;
         }
-        return temp;
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
     }
 
-    public static String getHeaders(List<String> result) {
-        StringBuilder headers = new StringBuilder();
+    public static ObjectNode getHeaders(List<String> result){
+        ObjectNode node = mapper.createObjectNode();
         int resultLength = result.size() - 1;
         for (int i = 1; i < resultLength; i++) {
             String[] split = result.get(i).split(": ");
-            headers.append("    \"").append(split[0]).append("\": \"").append(split[1]).append("\",\n");
+            node.put(split[0], split[1]);
         }
-        return headers.toString();
+        return node;
     }
 
     public void connect() {
@@ -79,6 +86,9 @@ public class Server {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             OutputStream out = socket.getOutputStream();
             PrintStream ps = new PrintStream(out);
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode node = mapper.createObjectNode();
 
             String line = null;
             List<String> result = new ArrayList<>();
