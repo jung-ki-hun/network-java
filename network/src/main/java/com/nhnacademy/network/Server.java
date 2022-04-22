@@ -86,6 +86,8 @@ public class Server {
             ////////////////////
             String[] splitLine = result.get(0).split(" ");
 
+            if(splitLine[1] == "/ip") {
+   
             String body =
                 splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
                     "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
