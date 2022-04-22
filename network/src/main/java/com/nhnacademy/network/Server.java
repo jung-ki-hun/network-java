@@ -86,7 +86,7 @@ public class Server {
             String line = null;
             List<String> requestHeader = new ArrayList<>();
             requestHeader.add(firstLine);
-            //System.out.println(firstLine);
+//            System.out.println(firstLine);
 //            byte[] byteArr = new byte[2048];
 //            out.write(byteArr);
 //            String s  = new String(byteArr);
@@ -112,17 +112,12 @@ public class Server {
 
             String[] splitLine = requestHeader.get(0).split(" ");
             String [] clientIp = clientSocket.getRemoteSocketAddress().toString().replace("/","").split(":");
-            String body =
-
-
-                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
+            String body = splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
                     "Content-Length: " + server.size(server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])) + "\n" +
                     "Connection: keep-alive\n" +
                     "Server: gunicorn/19.9.0\n" +
                     "Access-Control-Allow-Origin: *\n" +
                     "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])+"\n";
-
-            //System.out.println(body);
 
             ps.print(body);
         } catch (IOException e) {
