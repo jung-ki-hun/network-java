@@ -22,9 +22,11 @@ public class Server {
         ZonedDateTime now = ZonedDateTime.now();
         return DateTimeFormatter.RFC_1123_DATE_TIME.format(now);
     }
-    public int size(String str){
+
+    public int size(String str) {
         return str.length();
     }
+
     //    public String json(List <String> jsonData){
 //        String temp ="";
 //        for (String data:jsonData) {
@@ -33,26 +35,26 @@ public class Server {
 //        return "";
 //    }
     public String bodyMake(List<String> result) {
-        String temp ="";
+        String temp = "";
 
         String path = result.get(0).split(" ")[1];
         String host = result.get(1).split(" ")[1];
 
 
-        switch(path){
+        switch (path) {
             case "/ip":
-                temp ="{\n" +
+                temp = "{\n" +
                     "  \"origin\": \"103.243.200.16\"\n" +
                     "}";
                 return temp;
             case "/get":
-                temp ="{\n" +
+                temp = "{\n" +
                     "  \"args\": {},\n" +
                     "  \"headers\": {\n" +
                     getHeaders(result) +
                     "  },\n" +
                     "  \"origin\": \"103.243.200.16\"\n" +
-                    "  \"url\": \""+host+path+"\"\n" +
+                    "  \"url\": \"" + host + path + "\"\n" +
                     "}";
         }
         return temp;
@@ -86,23 +88,25 @@ public class Server {
             ////////////////////
             String[] splitLine = result.get(0).split(" ");
 
-            if(splitLine[1] == "/ip") {
-   
-            String body =
-                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
-                    "Connection: keep-alive\n" +
-                    "Server: gunicorn/19.9.0\n" +
-                    "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result)+"\n";
+            if (splitLine[1] == "/ip") {
 
-            System.out.println(socket.getInetAddress());
+                String body =
+                    splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
+                        "Content-Type: application/json\n" +
+                        "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
+                        "Connection: keep-alive\n" +
+                        "Server: gunicorn/19.9.0\n" +
+                        "Access-Control-Allow-Origin: *\n" +
+                        "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result) +
+                        "\n";
 
-            ps.print(body);
+                System.out.println(socket.getInetAddress());
+
+                ps.print(body);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static void main(String[] args) {
