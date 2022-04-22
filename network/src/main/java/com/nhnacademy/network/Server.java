@@ -86,24 +86,18 @@ public class Server {
                 if (line.equals("")) break;
             }
             ////////////////////
+
             String[] splitLine = result.get(0).split(" ");
 
-            if (splitLine[1] == "/ip") {
+            String body =
+                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
+                    "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
+                    "Connection: keep-alive\n" +
+                    "Server: gunicorn/19.9.0\n" +
+                    "Access-Control-Allow-Origin: *\n" +
+                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result)+"\n";
 
-                String body =
-                    splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
-                        "Content-Type: application/json\n" +
-                        "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
-                        "Connection: keep-alive\n" +
-                        "Server: gunicorn/19.9.0\n" +
-                        "Access-Control-Allow-Origin: *\n" +
-                        "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result) +
-                        "\n";
-
-                System.out.println(socket.getInetAddress());
-
-                ps.print(body);
-            }
+            ps.print(body);
         } catch (IOException e) {
             e.printStackTrace();
         }
