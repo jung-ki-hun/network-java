@@ -51,6 +51,12 @@ public class Parser {
         }
         return node;
     }
+
+    public ObjectNode getFile() {
+        ObjectNode node = null;
+
+        return node;
+    }
 //    public static void main(String[] args) {
 //        Parser parser = new Parser();
 //        System.out.println(parser.date());

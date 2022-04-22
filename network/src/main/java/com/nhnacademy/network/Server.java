@@ -35,7 +35,13 @@ public class Server {
     public int size(String str) {
         return str.length();
     }
+    public String getContentType(List<String> result){
 
+        for (String line: result) {
+            if (line.contains("Content-Type"))
+                return line.split(": ")[1];
+        }return null;
+    }
 
     public String bodyMake(List<String> result, String bodyData, String clinetIp) throws JsonProcessingException {
         String path = result.get(0).split(" ")[1];
@@ -53,14 +59,26 @@ public class Server {
             node.put("url", host + path);
         }
         if(path.contains("/post")){
-            node.putPOJO("args", parser.argParser(path));
-            node.put("data",bodyData);
-            node.putPOJO("files","");
-            node.putPOJO("form","");
-            node.putPOJO("headers", parser.getHeaders(result));
-            node.putPOJO("json",parser.jsonParser(bodyData));
-            node.put("origin", clinetIp);
-            node.put("url", host + path);
+            //if(getContentType(result).equals("application/json")) {
+                node.putPOJO("args", parser.argParser(path));
+                node.put("data", bodyData);
+                node.putPOJO("files", "");
+                node.putPOJO("form", "");
+                node.putPOJO("headers", parser.getHeaders(result));
+                node.putPOJO("json", parser.jsonParser(bodyData));
+                node.put("origin", clinetIp);
+                node.put("url", host + path);
+            //}
+            //if(getContentType(result).equals("multipart/form-data")){
+//                node.putPOJO("args", parser.argParser(path));
+//                node.put("data", "");
+//                node.putPOJO("files", parser.getFile());
+//                node.putPOJO("form", "");
+//                node.putPOJO("headers", parser.getHeaders(result));
+//                node.putPOJO("json", parser.jsonParser(bodyData));
+//                node.put("origin", clinetIp);
+//                node.put("url", host + path);
+            //}
         }
 
 
@@ -95,9 +113,10 @@ public class Server {
 
             while ((line = br.readLine()) != null) {
                 requestHeader.add(line);
-                if (line.equals("")) break;
+                //if (line.equals("")) break;
+                System.out.println(line);
             }
-
+            //requestHeader.stream().forEach(System.out::println);
             StringBuilder bodyData = new StringBuilder();
 
             if (firstLine.contains("/post")) {
@@ -105,6 +124,7 @@ public class Server {
                     bodyData.append(line);
                     if (line.equals("}")) {
                         break;}
+
                 }
             }
 
