@@ -26,14 +26,10 @@ public class Server {
     public int size(String str) {
         return str.length();
     }
+    public String parse(String str){
+        return str;
+    }
 
-    //    public String json(List <String> jsonData){
-//        String temp ="";
-//        for (String data:jsonData) {
-//            temp +=
-//        }
-//        return "";
-//    }
     public String bodyMake(List<String> result) {
         String temp = "";
 
@@ -52,8 +48,8 @@ public class Server {
                     "  \"args\": {},\n" +
                     "  \"headers\": {\n" +
                     getHeaders(result) +
-                    "  },\n" +
-                    "  \"origin\": \"103.243.200.16\"\n" +
+                    "  }\n" +
+                    "  \"origin\": \"" + result.get(result.size()-1) + "\"\n" +
                     "  \"url\": \"" + host + path + "\"\n" +
                     "}";
         }
@@ -63,8 +59,9 @@ public class Server {
     public static String getHeaders(List<String> result) {
         StringBuilder headers = new StringBuilder();
         int resultLength = result.size() - 1;
-        for (int i = 1; i < resultLength; i++) {
-            headers.append("    ").append(result.get(i)).append("\n");
+        for (int i = 1; i < resultLength-1; i++) {
+            String [] temp = result.get(i).split(": ");
+            headers.append("\"").append(temp[0]).append("\": \"").append(temp[1]).append("\",\n");
         }
         return headers.toString();
     }
@@ -85,6 +82,7 @@ public class Server {
                 result.add(line);
                 if (line.equals("")) break;
             }
+            result.add(socket.getInetAddress().toString());
             ////////////////////
 
             String[] splitLine = result.get(0).split(" ");
