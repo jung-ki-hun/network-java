@@ -64,7 +64,8 @@ public class Server {
         StringBuilder headers = new StringBuilder();
         int resultLength = result.size() - 1;
         for (int i = 1; i < resultLength; i++) {
-            headers.append("    ").append(result.get(i)).append("\n");
+            String[] split = result.get(i).split(": ");
+            headers.append("    \"").append(split[0]).append("\": \"").append(split[1]).append("\",\n");
         }
         return headers.toString();
     }
