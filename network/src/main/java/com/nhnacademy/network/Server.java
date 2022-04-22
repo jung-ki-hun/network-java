@@ -122,9 +122,7 @@ public class Server {
         Server server = new Server();
 
         try (ServerSocket serverSocket = new ServerSocket(80)) {
-            System.out.println("bye");
             Socket socket = serverSocket.accept();
-            System.out.println("hi");
             InputStream in = socket.getInputStream();
             byte[] bytes = null;
             String message = null;
