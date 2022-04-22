@@ -40,19 +40,19 @@ public class Server {
 //        }
 //        return "";
 //    }
-    public String bodyMake(List<String> result) throws JsonProcessingException {
+    public String bodyMake(List<String> result,String clinetIp) throws JsonProcessingException {
         String path = result.get(0).split(" ")[1];
         String host = result.get(1).split(" ")[1];
         ObjectNode node = mapper.createObjectNode();
 
         switch (path) {
             case "/ip":
-                node.put("origin", "103.243.200.16");
+                node.put("origin", clinetIp);
                 break;
             case "/get":
                 node.put("args", "");
                 node.putPOJO("headers", getHeaders(result));
-                node.put("origin", "103.243.200.16");
+                node.put("origin", clinetIp);
                 node.put("url", host+path);
 //                temp = "{\n" +
 //                    "  \"args\": {},\n" +
@@ -80,11 +80,11 @@ public class Server {
     public void connect() {
         Server server = new Server();
 
-        try (ServerSocket serverSocket = new ServerSocket(80)) {
-            Socket socket = serverSocket.accept();
-            InputStream in = socket.getInputStream();
+        try (ServerSocket serverSocket = new ServerSocket(3000)) {
+            Socket clientSocket = serverSocket.accept();
+            InputStream in = clientSocket.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            OutputStream out = socket.getOutputStream();
+            OutputStream out = clientSocket.getOutputStream();
             PrintStream ps = new PrintStream(out);
 
             ObjectMapper mapper = new ObjectMapper();
@@ -99,14 +99,15 @@ public class Server {
             ////////////////////
 
             String[] splitLine = result.get(0).split(" ");
-
+            String clientIpTemp = clientSocket.getRemoteSocketAddress().toString().replace("/","");
+            String [] clientIp = clientIpTemp.split(":");
             String body =
                 splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
+                    "Content-Length: " + server.size(server.bodyMake(result,clientIp[0])) + "\n" +
                     "Connection: keep-alive\n" +
                     "Server: gunicorn/19.9.0\n" +
                     "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result)+"\n";
+                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result,clientIp[0])+"\n";
 
             ps.print(body);
         } catch (IOException e) {
