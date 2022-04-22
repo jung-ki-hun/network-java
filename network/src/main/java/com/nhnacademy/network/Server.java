@@ -32,18 +32,22 @@ public class Server {
 //        }
 //        return "";
 //    }
-    public String bodyMake(String path) {
+    public String bodyMake(String path,List<String> require) {
         String temp ="";
+        String ip ="1.253.143.122";
         switch(path){
-            case "/get":
-                String ip ="1.253.143.122";
+            case "/ip":
                 temp ="{\n" +
                     "  \"origin\": \"103.243.200.16\"\n" +
                     "}";
                 return temp;
+            case "/get":
+
+            return temp;
         }
         return temp;
     }
+
     public void connect() {
         Server server = new Server();
 
@@ -65,17 +69,23 @@ public class Server {
             ////////////////////
 
             String[] splitLine = result.get(0).split(" ");
+            String body="";
+            if(splitLine[1] == "/ip") {
+                body =
+                    splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
+                        "Content-Type: application/json\n" +
+                        "Content-Length: " + server.size(server.bodyMake(splitLine[1],result) + "\n" +
+                        "Connection: keep-alive\n" +
+                        "Server: gunicorn/19.9.0\n" +
+                        "Access-Control-Allow-Origin: *\n" +
+                        "Access-Control-Allow-Credentials: true\n\n" +
+                        server.bodyMake(splitLine[1],result) + "\n";
 
-            String body =
-                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.bodyMake(splitLine[1])) + "\n" +
-                    "Connection: keep-alive\n" +
-                    "Server: gunicorn/19.9.0\n" +
-                    "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(splitLine[1])+"\n";
-
-            System.out.println(body);
-
+                System.out.println(body);
+            }
+            if(splitLine[1]== "/get"){
+                body = server.bodyMake(splitLine[1],result);
+            }
             ps.print(body);
         } catch (IOException e) {
             e.printStackTrace();
