@@ -1,13 +1,17 @@
 package com.nhnacademy.network;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+
 import java.io.PrintStream;
+
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,11 +22,9 @@ public class Server {
         ZonedDateTime now = ZonedDateTime.now();
         return DateTimeFormatter.RFC_1123_DATE_TIME.format(now);
     }
-
-    public int size(String str) {
+    public int size(String str){
         return str.length();
     }
-
     //    public String json(List <String> jsonData){
 //        String temp ="";
 //        for (String data:jsonData) {
@@ -30,116 +32,47 @@ public class Server {
 //        }
 //        return "";
 //    }
-    public String bodyMake(String path) {
-        String temp = "";
-        switch (path) {
+    public String bodyMake(List<String> result) {
+        String temp ="";
+
+        String path = result.get(0).split(" ")[1];
+        String host = result.get(1).split(" ")[1];
+
+
+        switch(path){
             case "/ip":
-                String ip = "1.253.143.122";
-                temp = "{\"origin\": \"" + ip + "\"\n }";
+                temp ="{\n" +
+                    "  \"origin\": \"103.243.200.16\"\n" +
+                    "}";
                 return temp;
+            case "/get":
+                temp ="{\n" +
+                    "  \"args\": {},\n" +
+                    "  \"headers\": {\n" +
+                    getHeaders(result) +
+                    "  },\n" +
+                    "  \"origin\": \"103.243.200.16\"\n" +
+                    "  \"url\": \""+host+path+"\"\n" +
+                    "}";
         }
         return temp;
     }
 
-    public String getMake(String path) {
-
-        System.out.println(path);
-        path = path.replace("\r\n", "");
-        String host = path.split("Host: ")[1].split("User-Agent")[0];
-        // replace(), split(),
-
-        String result = "";
-        result += "{\n";
-        result += "\"args\": {},\n";
-        result += "  \"headers\": {\n";
-        result += " \"Accept\": \"*/*\",";
-        result += "\"Host\": \"" + host + "\",\n";
-        result += "\"User-Agent\": \"curl/7.64.1\"\n";
-        result += " },\n";
-        result += " \"origin\": \"1.253.143.122\",\n";
-        result += " \"url\": \"http://" + host + "/get\"\n";
-        result += "}\n";
-
-        return result;
-    }
-
-    public String getMakeMessage(String path) {
-
-        System.out.println(path);
-        path = path.replace("\r\n", "");
-        String host = path.split("Host: ")[1].split("User-Agent")[0];
-        String data = path.split("get\\?")[1].split(" HTTP")[0];
-        String key = data.split("=")[0];
-        String value = data.split("=")[1];
-
-        // replace(), split(),
-
-        String result = "";
-        result += "{\n" +
-            "  \"args\": {\n" +
-            "    \"" + key + "\": \"" + value + "\"\n" +
-            "  },";
-        result += "  \"headers\": {\n";
-        result += " \"Accept\": \"*/*\",";
-        result += "\"Host\": \"" + host + "\",\n";
-        result += "\"User-Agent\": \"curl/7.64.1\"\n";
-        result += " },\n";
-        result += " \"origin\": \"1.253.143.122\",\n";
-        result += " \"url\": \"http://" + host + "/get\"\n";
-        result += "}\n";
-
-        return result;
-    }
-
-    public String getMakeMessages(String path) {
-        path = path.replace("\r\n", "");
-        String host = path.split("Host: ")[1].split("User-Agent")[0];
-        String[] data = path.split("get\\?")[1].split(" HTTP")[0].split("&");
-
-        String result = "";
-        result += "{\n" +
-            "  \"args\": {\n";
-
-        for (int i = 0; i < data.length; i++) {
-            String key = data[i].split("=")[0];
-            String value = data[i].split("=")[1];
-            result += "    \"" + key + "\": \"" + value + "\"\n";
+    public static String getHeaders(List<String> result) {
+        StringBuilder headers = new StringBuilder();
+        int resultLength = result.size() - 1;
+        for (int i = 1; i < resultLength; i++) {
+            headers.append("    ").append(result.get(i)).append("\n");
         }
-        result += "  },";
-        result += "  \"headers\": {\n";
-        result += " \"Accept\": \"*/*\",";
-        result += "\"Host\": \"" + host + "\",\n";
-        result += "\"User-Agent\": \"curl/7.64.1\"\n";
-        result += " },\n";
-        result += " \"origin\": \"1.253.143.122\",\n";
-        result += " \"url\": \"http://" + host + "/get\"\n";
-        result += "}\n";
-
-        return result;
+        return headers.toString();
     }
 
     public void connect() {
         Server server = new Server();
 
         try (ServerSocket serverSocket = new ServerSocket(80)) {
-            System.out.println("bye");
             Socket socket = serverSocket.accept();
-            System.out.println("hi");
             InputStream in = socket.getInputStream();
-            byte[] bytes = null;
-            String message = null;
-            bytes = new byte[100];
-            int readByteCount = in.read(bytes);
-            message = new String(bytes, 0, readByteCount, "UTF-8");
-            // 2-1
-//            String messageResult = getMake(message);
-//            System.out.println(messageResult);
-            // 2-2
-//            System.out.println(getMakeMessage(message));
-            // 2-3
-            System.out.println(getMakeMessages(message));
-
-
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             OutputStream out = socket.getOutputStream();
             PrintStream ps = new PrintStream(out);
@@ -148,32 +81,26 @@ public class Server {
             List<String> result = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 result.add(line);
-                if (line.equals("")) {
-                    break;
-                }
-
-
+                if (line.equals("")) break;
             }
             ////////////////////
-
             String[] splitLine = result.get(0).split(" ");
 
             String body =
-                splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
-                    "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.bodyMake(splitLine[1])) + "\n" +
+                splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
+                    "Content-Length: " + server.size(server.bodyMake(result)) + "\n" +
                     "Connection: keep-alive\n" +
                     "Server: gunicorn/19.9.0\n" +
                     "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(splitLine[1]) +
-                    "\n";
+                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(result)+"\n";
 
-            System.out.println(body);
+            System.out.println(socket.getInetAddress());
 
             ps.print(body);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public static void main(String[] args) {
