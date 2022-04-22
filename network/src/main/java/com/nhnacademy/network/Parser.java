@@ -17,9 +17,9 @@ public class Parser {
 
         return date.toString();
     }
-    public ObjectNode getHeaders(List<String> result,int size){
+    public ObjectNode getHeaders(List<String> result){
         ObjectNode node = mapper.createObjectNode();
-        int resultLength = size - 1;
+        int resultLength = result.size() - 1;
         for (int i = 1; i < resultLength; i++) {
             String[] split = result.get(i).split(": ");
             node.put(split[0], split[1]);
@@ -46,11 +46,9 @@ public class Parser {
         ObjectNode node = null;
         try {
             node = mapper.readValue(str, ObjectNode.class);
-            System.out.println(str);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(node);
         return node;
     }
 //    public static void main(String[] args) {
