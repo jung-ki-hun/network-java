@@ -44,62 +44,52 @@ public class Server {
     }
 
 
-
-    public String bodyMake(List<String> result, String bodyData, String clinetIp)
+    public String bodyMake(List<String> result, List<String> bodyData, String clientIp)
         throws JsonProcessingException {
         String path = result.get(0).split(" ")[1];
         String host = result.get(1).split(" ")[1];
         ObjectNode node = mapper.createObjectNode();
-        int headerSize = result.indexOf("{");
 
         if (path.contains("/ip")) {
-            node.put("origin", clinetIp);
+            node.put("origin", clientIp);
         }
         if (path.contains("/get")) {
             node.putPOJO("args", parser.argParser(path));
             node.putPOJO("headers", parser.getHeaders(result));
-            node.put("origin", clinetIp);
+            node.put("origin", clientIp);
             node.put("url", host + path);
         }
         if (path.contains("/post")) {
-            //if(getContentType(result).equals("application/json")) {
-            node.putPOJO("args", parser.argParser(path));
-            node.put("data", bodyData);
-            node.putPOJO("files", "");
-            node.putPOJO("form", "");
-            node.putPOJO("headers", parser.getHeaders(result));
-            node.putPOJO("json", parser.jsonParser(bodyData));
-            node.put("origin", clinetIp);
-            node.put("url", host + path);
-            //}
-            //if(getContentType(result).equals("multipart/form-data")){
-//                node.putPOJO("args", parser.argParser(path));
-//                node.put("data", "");
-//                node.putPOJO("files", parser.getFile());
-//                node.putPOJO("form", "");
-//                node.putPOJO("headers", parser.getHeaders(result));
-//                node.putPOJO("json", parser.jsonParser(bodyData));
-//                node.put("origin", clinetIp);
-//                node.put("url", host + path);
-            //}
+            System.out.println(getContentType(result));
+            if (getContentType(result).contains("application/json")) {
+                StringBuilder sb = new StringBuilder();
+                bodyData.forEach(sb::append);
+                node.putPOJO("args", parser.argParser(path));
+                node.put("data", sb.toString());
+                node.putPOJO("files", "");
+                node.putPOJO("form", "");
+                node.putPOJO("headers", parser.getHeaders(result));
+                node.putPOJO("json", parser.jsonParser(bodyData));
+                node.put("origin", clientIp);
+                node.put("url", host + path);
+            }
+            if (getContentType(result).contains("multipart/form-data")) {
+                node.putPOJO("args", parser.argParser(path));
+                node.put("data", "");
+                String fileData = parser.getFile(bodyData);
+                node.putPOJO("files", fileData);
+                node.putPOJO("form", "");
+                node.putPOJO("headers", parser.getHeaders(result));
+                node.putPOJO("json", null);
+                node.put("origin", clientIp);
+                node.put("url", host + path);
+            }
         }
 
 
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
     }
 
-
-
-
-    public static ObjectNode getHeaders(List<String> result) {
-        ObjectNode node = mapper.createObjectNode();
-        int resultLength = result.size() - 1;
-        for (int i = 1; i < resultLength; i++) {
-            String[] split = result.get(i).split(": ");
-            node.put(split[0], split[1]);
-        }
-        return node;
-    }
 
     public void connect() {
         Server server = new Server();
@@ -112,44 +102,25 @@ public class Server {
         ) {
 
             PrintStream ps = new PrintStream(out);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode node = mapper.createObjectNode();
 
             String firstLine = br.readLine();
             String line = null;
             List<String> requestHeader = new ArrayList<>();
             requestHeader.add(firstLine);
-//            System.out.println(firstLine);
-//            byte[] byteArr = new byte[2048];
-//            out.write(byteArr);
-//            String s  = new String(byteArr);
-//            System.out.println(s);
-//            System.out.println(byteArr.toString());
-            ThreadStop tp = new ThreadStop();
-            tp.start();
             while ((line = br.readLine()) != null) {
                 requestHeader.add(line);
-                if (line.equals("")) break;
-                System.out.println(line);
-            }
-            //requestHeader.stream().forEach(System.out::println);
-            StringBuilder bodyData = new StringBuilder();
-//                out.write('\
-
-            if (firstLine.contains("/post")) {
-                while ((line = br.readLine()) != null) {
-                    bodyData.append(line);
-                    if (line.equals("}")) {
-                        break;
-                    }
-                    if(tp.isStop()){
-                        break;
-                    }
+                if (line.equals("")) {
+                    break;
                 }
             }
 
-            ////////////////////
+            List<String> bodyData = new ArrayList<>();
+            if (firstLine.contains("/post")) {
+                while (br.ready() && (line = br.readLine()) != null) {
+                    bodyData.add(line);
+                }
+            }
+
 
             String[] splitLine = requestHeader.get(0).split(" ");
             String[] clientIp =
@@ -157,13 +128,13 @@ public class Server {
             String body = splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
                 "Content-Type: application/json\n" +
                 "Content-Length: " +
-                server.size(server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])) +
+                server.size(server.bodyMake(requestHeader, bodyData, clientIp[0])) +
                 "\n" +
                 "Connection: keep-alive\n" +
                 "Server: gunicorn/19.9.0\n" +
                 "Access-Control-Allow-Origin: *\n" +
                 "Access-Control-Allow-Credentials: true\n\n" +
-                server.bodyMake(requestHeader, bodyData.toString(), clientIp[0]) + "\n";
+                server.bodyMake(requestHeader, bodyData, clientIp[0]) + "\n";
 
             ps.print(body);
         } catch (IOException e) {

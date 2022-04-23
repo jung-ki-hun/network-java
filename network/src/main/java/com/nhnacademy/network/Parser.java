@@ -9,14 +9,6 @@ import java.util.List;
 
 public class Parser {
     private final static ObjectMapper mapper = new ObjectMapper();
-    public String date() {
-
-        String input = LocalDateTime.now().toString();
-        DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
-        LocalDateTime date = LocalDateTime.parse(input, formatter);
-
-        return date.toString();
-    }
     public ObjectNode getHeaders(List<String> result){
         ObjectNode node = mapper.createObjectNode();
         int resultLength = result.size() - 1;
@@ -30,36 +22,33 @@ public class Parser {
         ObjectNode node = mapper.createObjectNode();
 
         if(str.contains("&")){
-        String [] pathUrl = str.split("\\?");
-        String [] pathUrl2 = pathUrl[1].split("&");
-        for (int i = 0; i <pathUrl2.length; i++) {
-            String[] temp=pathUrl2[i].split("=");
-            node.put(temp[0],temp[1]);
-        }
-        return node;
+            String [] pathUrl = str.split("\\?");
+            String [] pathUrl2 = pathUrl[1].split("&");
+            for (int i = 0; i <pathUrl2.length; i++) {
+                String[] temp=pathUrl2[i].split("=");
+                node.put(temp[0],temp[1]);
+            }
         }
         return node;
     }
 
-    public ObjectNode jsonParser(String str)
+    public ObjectNode jsonParser(List<String> str)
     {
         ObjectNode node = null;
+        StringBuilder sb = new StringBuilder();
+        str.forEach(sb::append);
         try {
-            node = mapper.readValue(str, ObjectNode.class);
+            node = mapper.readValue(sb.toString(), ObjectNode.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return node;
     }
 
-    public ObjectNode getFile() {
-        ObjectNode node = null;
-
-        return node;
+    public String getFile(List<String> str) {;
+        int index = str.indexOf("");
+        str.stream().forEach(System.out::println);
+        return str.get(index +1);
     }
-//    public static void main(String[] args) {
-//        Parser parser = new Parser();
-//        System.out.println(parser.date());
-//    }
 
 }
