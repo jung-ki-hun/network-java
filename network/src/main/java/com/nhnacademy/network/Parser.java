@@ -3,12 +3,10 @@ package com.nhnacademy.network;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Parser {
-    private final static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
     public ObjectNode getHeaders(List<String> result){
         ObjectNode node = mapper.createObjectNode();
         int resultLength = result.size() - 1;
@@ -24,9 +22,9 @@ public class Parser {
         if(str.contains("&")){
             String [] pathUrl = str.split("\\?");
             String [] pathUrl2 = pathUrl[1].split("&");
-            for (int i = 0; i <pathUrl2.length; i++) {
-                String[] temp=pathUrl2[i].split("=");
-                node.put(temp[0],temp[1]);
+            for (String s : pathUrl2) {
+                String[] temp = s.split("=");
+                node.put(temp[0], temp[1]);
             }
         }
         return node;
@@ -45,9 +43,9 @@ public class Parser {
         return node;
     }
 
-    public String getFile(List<String> str) {;
+    public String getFile(List<String> str) {
         int index = str.indexOf("");
-        str.stream().forEach(System.out::println);
+        str.forEach(System.out::println);
         return str.get(index +1);
     }
 

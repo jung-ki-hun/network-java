@@ -4,12 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,7 +19,7 @@ import java.util.List;
 
 public class Server {
 
-    private final static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
     private final Parser parser = new Parser();
 
     public String date() {
@@ -60,7 +58,6 @@ public class Server {
             node.put("url", host + path);
         }
         if (path.contains("/post")) {
-            System.out.println(getContentType(result));
             if (getContentType(result).contains("application/json")) {
                 StringBuilder sb = new StringBuilder();
                 bodyData.forEach(sb::append);
