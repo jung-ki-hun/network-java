@@ -125,19 +125,13 @@ public class Server {
 
             while ((line = br.readLine()) != null) {
                 requestHeader.add(line);
-                //if (line.equals("")) break;
-                System.out.println(line);
+                if (line.equals("")) break;
             }
-            //requestHeader.stream().forEach(System.out::println);
-            StringBuilder bodyData = new StringBuilder();
-//                out.write('\n');
-            if (firstLine.contains("/post")) {
-                while ((line = br.readLine()) != null) {
-                    bodyData.append(line);
-                    if (line.isEmpty()) {
 
-                        break;
-                    }
+            StringBuilder bodyData = new StringBuilder();
+            if (firstLine.contains("/post")) {
+                while (br.ready() && (line = br.readLine()) != null) {
+                    bodyData.append(line);
                 }
             }
 
