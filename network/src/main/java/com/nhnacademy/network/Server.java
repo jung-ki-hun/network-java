@@ -3,20 +3,16 @@ package com.nhnacademy.network;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
+
     private final static ObjectMapper mapper = new ObjectMapper();
     private final Parser parser = new Parser();
 
@@ -35,39 +32,45 @@ public class Server {
     public int size(String str) {
         return str.length();
     }
-    public String getContentType(List<String> result){
 
-        for (String line: result) {
-            if (line.contains("Content-Type"))
+    public String getContentType(List<String> result) {
+
+        for (String line : result) {
+            if (line.contains("Content-Type")) {
                 return line.split(": ")[1];
-        }return null;
+            }
+        }
+        return null;
     }
 
-    public String bodyMake(List<String> result, String bodyData, String clinetIp) throws JsonProcessingException {
+
+
+    public String bodyMake(List<String> result, String bodyData, String clinetIp)
+        throws JsonProcessingException {
         String path = result.get(0).split(" ")[1];
         String host = result.get(1).split(" ")[1];
         ObjectNode node = mapper.createObjectNode();
         int headerSize = result.indexOf("{");
 
-        if(path.contains("/ip")){
+        if (path.contains("/ip")) {
             node.put("origin", clinetIp);
         }
-        if(path.contains("/get")) {
+        if (path.contains("/get")) {
             node.putPOJO("args", parser.argParser(path));
             node.putPOJO("headers", parser.getHeaders(result));
             node.put("origin", clinetIp);
             node.put("url", host + path);
         }
-        if(path.contains("/post")){
+        if (path.contains("/post")) {
             //if(getContentType(result).equals("application/json")) {
-                node.putPOJO("args", parser.argParser(path));
-                node.put("data", bodyData);
-                node.putPOJO("files", "");
-                node.putPOJO("form", "");
-                node.putPOJO("headers", parser.getHeaders(result));
-                node.putPOJO("json", parser.jsonParser(bodyData));
-                node.put("origin", clinetIp);
-                node.put("url", host + path);
+            node.putPOJO("args", parser.argParser(path));
+            node.put("data", bodyData);
+            node.putPOJO("files", "");
+            node.putPOJO("form", "");
+            node.putPOJO("headers", parser.getHeaders(result));
+            node.putPOJO("json", parser.jsonParser(bodyData));
+            node.put("origin", clinetIp);
+            node.put("url", host + path);
             //}
             //if(getContentType(result).equals("multipart/form-data")){
 //                node.putPOJO("args", parser.argParser(path));
@@ -84,11 +87,11 @@ public class Server {
 
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
     }
-    public static boolean runTimeOut() throws InterruptedException {
-        Thread.sleep(5000);
-        return true;
-    }
-    public static ObjectNode getHeaders(List<String> result){
+
+
+
+
+    public static ObjectNode getHeaders(List<String> result) {
         ObjectNode node = mapper.createObjectNode();
         int resultLength = result.size() - 1;
         for (int i = 1; i < resultLength; i++) {
@@ -101,17 +104,19 @@ public class Server {
     public void connect() {
         Server server = new Server();
 
-        try (ServerSocket serverSocket = new ServerSocket(3000)) {
-            Socket clientSocket = serverSocket.accept();
-            InputStream in = clientSocket.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            OutputStream out = clientSocket.getOutputStream();
+        try (ServerSocket serverSocket = new ServerSocket(3000);
+             Socket clientSocket = serverSocket.accept();
+             InputStream in = clientSocket.getInputStream();
+             BufferedReader br = new BufferedReader(new InputStreamReader(in));
+             OutputStream out = clientSocket.getOutputStream();
+        ) {
+
             PrintStream ps = new PrintStream(out);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode node = mapper.createObjectNode();
 
-            String firstLine =  br.readLine();
+            String firstLine = br.readLine();
             String line = null;
             List<String> requestHeader = new ArrayList<>();
             requestHeader.add(firstLine);
@@ -121,21 +126,24 @@ public class Server {
 //            String s  = new String(byteArr);
 //            System.out.println(s);
 //            System.out.println(byteArr.toString());
-
-
+            ThreadStop tp = new ThreadStop();
+            tp.start();
             while ((line = br.readLine()) != null) {
                 requestHeader.add(line);
-                //if (line.equals("")) break;
+                if (line.equals("")) break;
                 System.out.println(line);
             }
             //requestHeader.stream().forEach(System.out::println);
             StringBuilder bodyData = new StringBuilder();
-//                out.write('\n');
+//                out.write('\
+
             if (firstLine.contains("/post")) {
                 while ((line = br.readLine()) != null) {
                     bodyData.append(line);
-                    if (line.isEmpty()) {
-
+                    if (line.equals("}")) {
+                        break;
+                    }
+                    if(tp.isStop()){
                         break;
                     }
                 }
@@ -144,13 +152,18 @@ public class Server {
             ////////////////////
 
             String[] splitLine = requestHeader.get(0).split(" ");
-            String [] clientIp = clientSocket.getRemoteSocketAddress().toString().replace("/","").split(":");
-            String body = splitLine[2] + " 200 OK\n" + "Date: " + server.date() +"\n" + "Content-Type: application/json\n" +
-                    "Content-Length: " + server.size(server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])) + "\n" +
-                    "Connection: keep-alive\n" +
-                    "Server: gunicorn/19.9.0\n" +
-                    "Access-Control-Allow-Origin: *\n" +
-                    "Access-Control-Allow-Credentials: true\n\n" + server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])+"\n";
+            String[] clientIp =
+                clientSocket.getRemoteSocketAddress().toString().replace("/", "").split(":");
+            String body = splitLine[2] + " 200 OK\n" + "Date: " + server.date() + "\n" +
+                "Content-Type: application/json\n" +
+                "Content-Length: " +
+                server.size(server.bodyMake(requestHeader, bodyData.toString(), clientIp[0])) +
+                "\n" +
+                "Connection: keep-alive\n" +
+                "Server: gunicorn/19.9.0\n" +
+                "Access-Control-Allow-Origin: *\n" +
+                "Access-Control-Allow-Credentials: true\n\n" +
+                server.bodyMake(requestHeader, bodyData.toString(), clientIp[0]) + "\n";
 
             ps.print(body);
         } catch (IOException e) {
